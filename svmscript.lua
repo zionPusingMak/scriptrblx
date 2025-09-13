@@ -14,6 +14,7 @@
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
@@ -25,7 +26,7 @@ screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
 -- Main Container Frame
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 220, 0, 420) -- Ukuran GUI diperbesar untuk menampung fitur baru
+mainFrame.Size = UDim2.new(0, 220, 0, 420)
 mainFrame.Position = UDim2.new(0.05, 0, 0.3, 0)
 mainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 mainFrame.BackgroundTransparency = 0.2
@@ -35,7 +36,6 @@ mainFrame.ClipsDescendants = true
 local corner = Instance.new("UICorner")
 corner.CornerRadius = UDim.new(0, 12)
 corner.Parent = mainFrame
-
 mainFrame.Parent = screenGui
 
 -- Title Bar
@@ -49,7 +49,6 @@ titleBar.BorderSizePixel = 0
 local titleCorner = Instance.new("UICorner")
 titleCorner.CornerRadius = UDim.new(0, 12)
 titleCorner.Parent = titleBar
-
 titleBar.Parent = mainFrame
 
 -- Title Text
@@ -79,7 +78,6 @@ closeBtn.BorderSizePixel = 0
 local closeCorner = Instance.new("UICorner")
 closeCorner.CornerRadius = UDim.new(0, 12)
 closeCorner.Parent = closeBtn
-
 closeBtn.Parent = titleBar
 
 -- Minimize Button
@@ -97,7 +95,6 @@ miniBtn.BorderSizePixel = 0
 local miniCorner = Instance.new("UICorner")
 miniCorner.CornerRadius = UDim.new(0, 12)
 miniCorner.Parent = miniBtn
-
 miniBtn.Parent = titleBar
 
 -- Content Frame
@@ -142,7 +139,6 @@ coordBox.LayoutOrder = 2
 local coordCorner = Instance.new("UICorner")
 coordCorner.CornerRadius = UDim.new(0, 8)
 coordCorner.Parent = coordBox
-
 coordBox.Parent = content
 
 -- Teleport Button
@@ -160,7 +156,6 @@ tpBtn.LayoutOrder = 3
 local tpCorner = Instance.new("UICorner")
 tpCorner.CornerRadius = UDim.new(0, 8)
 tpCorner.Parent = tpBtn
-
 tpBtn.Parent = content
 
 -- Copy Position Button
@@ -178,7 +173,6 @@ copyBtn.LayoutOrder = 4
 local copyCorner = Instance.new("UICorner")
 copyCorner.CornerRadius = UDim.new(0, 8)
 copyCorner.Parent = copyBtn
-
 copyBtn.Parent = content
 
 -- WalkSpeed Section Title
@@ -209,7 +203,6 @@ wsBox.LayoutOrder = 6
 local wsCorner = Instance.new("UICorner")
 wsCorner.CornerRadius = UDim.new(0, 8)
 wsCorner.Parent = wsBox
-
 wsBox.Parent = content
 
 -- WalkSpeed Toggle Button
@@ -227,7 +220,6 @@ wsBtn.LayoutOrder = 7
 local wsBtnCorner = Instance.new("UICorner")
 wsBtnCorner.CornerRadius = UDim.new(0, 8)
 wsBtnCorner.Parent = wsBtn
-
 wsBtn.Parent = content
 
 -- ESP Section Title
@@ -258,17 +250,15 @@ ghostBtn.BorderSizePixel = 0
 local ghostCorner = Instance.new("UICorner")
 ghostCorner.CornerRadius = UDim.new(0, 12)
 ghostCorner.Parent = ghostBtn
-
 ghostBtn.Parent = screenGui
 
 -- FUNGSI BARU UNTUK ESP
-
 local espBoxEnabled = false
 local espSkeletonEnabled = false
 local espTracerEnabled = false
 local visuals = {}
 
-local function createOptionToggle(parent, name, layoutOrder, enabledVariable, callback)
+local function createOptionToggle(parent, name, layoutOrder, callback)
     local optionFrame = Instance.new("Frame")
     optionFrame.Size = UDim2.new(1, 0, 0, 30)
     optionFrame.BackgroundTransparency = 1
@@ -302,7 +292,6 @@ local function createOptionToggle(parent, name, layoutOrder, enabledVariable, ca
     local switchCorner = Instance.new("UICorner")
     switchCorner.CornerRadius = UDim.new(0, 8)
     switchCorner.Parent = switchBtn
-
     switchBtn.Parent = optionFrame
 
     local currentState = false
@@ -322,51 +311,27 @@ local function createOptionToggle(parent, name, layoutOrder, enabledVariable, ca
 end
 
 -- Create ESP Box Toggle
-createOptionToggle(content, "ESP Box", 9, espBoxEnabled, function(state)
+createOptionToggle(content, "ESP Box", 9, function(state)
     espBoxEnabled = state
-    if not state then
-        for _, v in pairs(visuals) do
-            if v.Box then v.Box:Destroy() end
-            v.Box = nil
-        end
-    end
 end)
 
 -- Create ESP Skeleton Toggle
-createOptionToggle(content, "ESP Skeleton", 10, espSkeletonEnabled, function(state)
+createOptionToggle(content, "ESP Skeleton", 10, function(state)
     espSkeletonEnabled = state
-    if not state then
-        for _, v in pairs(visuals) do
-            if v.Skeleton then
-                for _, part in pairs(v.Skeleton) do
-                    part:Destroy()
-                end
-            end
-            v.Skeleton = nil
-        end
-    end
 end)
 
 -- Create ESP Tracer Toggle
-createOptionToggle(content, "ESP Tracer", 11, espTracerEnabled, function(state)
+createOptionToggle(content, "ESP Tracer", 11, function(state)
     espTracerEnabled = state
-    if not state then
-        for _, v in pairs(visuals) do
-            if v.Tracer then v.Tracer:Destroy() end
-            v.Tracer = nil
-        end
-    end
 end)
 
-
 -- ESP Functions
-
 local function createBox(target)
     local box = Instance.new("BillboardGui")
     box.Size = UDim2.new(0, 100, 0, 100)
     box.AlwaysOnTop = true
     box.Adornee = target.HumanoidRootPart
-    box.Parent = screenGui
+    box.Parent = screenGui -- Parent it to screenGui to be cleaned up easily
 
     local frame = Instance.new("Frame")
     frame.Size = UDim2.new(1, 0, 1, 0)
@@ -387,22 +352,31 @@ local function createTracer(target)
     tracer.Size = Vector3.new(0.1, 0.1, 0.1)
     tracer.TopSurface = Enum.SurfaceType.Smooth
     tracer.BottomSurface = Enum.SurfaceType.Smooth
-    tracer.Parent = workspace.CurrentCamera
+    tracer.Parent = screenGui -- Parent it to screenGui
 
     return tracer
 end
 
 local function createSkeleton(target)
     local skeleton = {}
-    local parts = {
-        {"Head", "Torso"},
-        {"Left Arm", "Torso"},
-        {"Right Arm", "Torso"},
-        {"Left Leg", "Torso"},
-        {"Right Leg", "Torso"},
+    local bodyParts = {
+        {"Head", "UpperTorso"},
+        {"UpperTorso", "RightUpperArm"},
+        {"UpperTorso", "LeftUpperArm"},
+        {"UpperTorso", "LowerTorso"},
+        {"RightUpperArm", "RightLowerArm"},
+        {"LeftUpperArm", "LeftLowerArm"},
+        {"LowerTorso", "RightUpperLeg"},
+        {"LowerTorso", "LeftUpperLeg"},
+        {"RightLowerArm", "RightHand"},
+        {"LeftLowerArm", "LeftHand"},
+        {"RightUpperLeg", "RightLowerLeg"},
+        {"LeftUpperLeg", "LeftLowerLeg"},
+        {"RightLowerLeg", "RightFoot"},
+        {"LeftLowerLeg", "LeftFoot"},
     }
 
-    local function createLine(p1, p2)
+    local function createLine(part1, part2)
         local line = Instance.new("Part")
         line.Anchored = true
         line.CanCollide = false
@@ -410,11 +384,11 @@ local function createSkeleton(target)
         line.Transparency = 0.5
         line.TopSurface = Enum.SurfaceType.Smooth
         line.BottomSurface = Enum.SurfaceType.Smooth
-        line.Parent = workspace.CurrentCamera
+        line.Parent = screenGui -- Parent it to screenGui
         return line
     end
 
-    for _, p in pairs(parts) do
+    for _, p in pairs(bodyParts) do
         local part1 = target:FindFirstChild(p[1])
         local part2 = target:FindFirstChild(p[2])
         if part1 and part2 then
@@ -441,14 +415,17 @@ local function updateESP()
                     visuals[plr.UserId].Box = createBox(target)
                 end
                 local box = visuals[plr.UserId].Box
-                local size = (target:GetBoundingBox().CFrame * CFrame.new(0, 0, -target:GetBoundingBox().Size.Z / 2)).p
+                local min, max = target:GetBoundingBox()
+                local size = (max - min)
                 local pos = rootPart.Position
                 local distance = (pos - player.Character.HumanoidRootPart.Position).Magnitude
-                box.Size = UDim2.new(0, distance * 50, 0, distance * 50)
-                box.StudsOffset = Vector3.new(0, -target:GetBoundingBox().Size.Y / 2, 0)
-            elseif visuals[plr.UserId].Box then
-                visuals[plr.UserId].Box:Destroy()
-                visuals[plr.UserId].Box = nil
+                box.Size = UDim2.new(0, 100 * (distance / 50), 0, 100 * (distance / 50))
+                box.StudsOffset = Vector3.new(0, size.Y / 2, 0)
+            else
+                if visuals[plr.UserId].Box then
+                    visuals[plr.UserId].Box:Destroy()
+                    visuals[plr.UserId].Box = nil
+                end
             end
 
             -- Update Tracer ESP
@@ -462,9 +439,11 @@ local function updateESP()
                 local distance = (p1 - p2).Magnitude
                 tracer.Size = Vector3.new(0.1, 0.1, distance)
                 tracer.CFrame = CFrame.new(p1, p2) * CFrame.new(0, 0, -distance / 2)
-            elseif visuals[plr.UserId].Tracer then
-                visuals[plr.UserId].Tracer:Destroy()
-                visuals[plr.UserId].Tracer = nil
+            else
+                if visuals[plr.UserId].Tracer then
+                    visuals[plr.UserId].Tracer:Destroy()
+                    visuals[plr.UserId].Tracer = nil
+                end
             end
 
             -- Update Skeleton ESP
@@ -473,12 +452,21 @@ local function updateESP()
                     visuals[plr.UserId].Skeleton = createSkeleton(target)
                 end
                 local skeleton = visuals[plr.UserId].Skeleton
-                local parts = {
-                    {"Head", "Torso"},
-                    {"Left Arm", "Torso"},
-                    {"Right Arm", "Torso"},
-                    {"Left Leg", "Torso"},
-                    {"Right Leg", "Torso"},
+                local bodyParts = {
+                    {"Head", "UpperTorso"},
+                    {"UpperTorso", "RightUpperArm"},
+                    {"UpperTorso", "LeftUpperArm"},
+                    {"UpperTorso", "LowerTorso"},
+                    {"RightUpperArm", "RightLowerArm"},
+                    {"LeftUpperArm", "LeftLowerArm"},
+                    {"LowerTorso", "RightUpperLeg"},
+                    {"LowerTorso", "LeftUpperLeg"},
+                    {"RightLowerArm", "RightHand"},
+                    {"LeftLowerArm", "LeftHand"},
+                    {"RightUpperLeg", "RightLowerLeg"},
+                    {"LeftUpperLeg", "LeftLowerLeg"},
+                    {"RightLowerLeg", "RightFoot"},
+                    {"LeftLowerLeg", "LeftFoot"},
                 }
 
                 local function updateLine(line, p1, p2)
@@ -487,18 +475,22 @@ local function updateESP()
                     line.CFrame = CFrame.new(p1.Position, p2.Position) * CFrame.new(0, 0, -distance / 2)
                 end
 
-                for i, p in pairs(parts) do
+                for i, p in ipairs(bodyParts) do
                     local part1 = target:FindFirstChild(p[1])
                     local part2 = target:FindFirstChild(p[2])
                     if part1 and part2 and skeleton[i] then
                         updateLine(skeleton[i], part1, part2)
                     end
                 end
-            elseif visuals[plr.UserId].Skeleton then
-                for _, part in pairs(visuals[plr.UserId].Skeleton) do
-                    part:Destroy()
+            else
+                if visuals[plr.UserId].Skeleton then
+                    for _, part in pairs(visuals[plr.UserId].Skeleton) do
+                        if part and part.Parent then
+                            part:Destroy()
+                        end
+                    end
+                    visuals[plr.UserId].Skeleton = nil
                 end
-                visuals[plr.UserId].Skeleton = nil
             end
         else
             -- Clean up visuals if the player is no longer valid
@@ -586,15 +578,17 @@ end)
 closeBtn.MouseButton1Click:Connect(function()
     heartbeatConnection:Disconnect()
     screenGui:Destroy()
-    for _, visual in pairs(visuals) do
-        if typeof(visual) == "table" then
-            for _, part in pairs(visual) do
-                if part and part.Parent then
-                    part:Destroy()
+    for _, visual_data in pairs(visuals) do
+        for _, visual_obj in pairs(visual_data) do
+            if typeof(visual_obj) == "table" then
+                for _, part in pairs(visual_obj) do
+                    if part and part.Parent then
+                        part:Destroy()
+                    end
                 end
+            elseif visual_obj and visual_obj.Parent then
+                visual_obj:Destroy()
             end
-        elseif visual and visual.Parent then
-            visual:Destroy()
         end
     end
 end)
@@ -628,29 +622,26 @@ local startPos
 local function update(input)
     local delta = input.Position - dragStart
     mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
- end
+end
 
-titleBar. InputBegan: Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum. User InputType. Touch then 
-         dragging = true 
-         dragStart = input.Position 
-         startPos = mainFrame.Position
-
-         input.Changed:Connect(Function()
-             if input.UserInputState == Enum.UserInputState.End then
-                 dragging = false
-             end
-         end)
-     end
- end)
-titleBar.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-        dragInput = input
+titleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
     end
 end)
 
-game:GetService("UserInputService").InputChanged:Connect(function(input)
-    if input == dragInput and dragging then
-        update(input)
+UserInputService.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        if dragging then
+            update(input)
+        end
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
     end
 end)
