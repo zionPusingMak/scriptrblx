@@ -613,7 +613,7 @@ miniBtn.MouseButton1Click:Connect(function()
 end)
 
 -- Ghost Button Function (restore)
-ghostBtn.MouseButton1Click:Connect(Function()
+ghostBtn.MouseButton1Click:Connect(function()
     mainFrame.Visible = true
     ghostBtn.Visible = false
     isMinimized = false
@@ -627,11 +627,11 @@ local startPos
 
 local function update(input)
     local delta = input.Position - dragStart
-    mainFrame.Position = UDim2.new(startPos.X. Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.qY)
+    mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
  end
 
 titleBar. InputBegan: Connect(function(input)
-    if input. User InputType == Enum. User InputType.MouseButton1 or input.UserInputType == Enum. User InputType. Touch then 
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum. User InputType. Touch then 
          dragging = true 
          dragStart = input.Position 
          startPos = mainFrame.Position
@@ -645,7 +645,7 @@ titleBar. InputBegan: Connect(function(input)
  end)
 titleBar.InputChanged:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-        dragInput = Input
+        dragInput = input
     end
 end)
 
